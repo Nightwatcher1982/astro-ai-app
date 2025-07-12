@@ -24,18 +24,36 @@
 npm install
 ```
 
-### 2. 配置环境变量
+### 2. 配置AI服务
 
-在Vercel项目设置中添加以下环境变量：
+项目支持多个AI服务提供商，推荐使用国内服务：
 
+#### 方案1: 月之暗面 Kimi (推荐) 🌟
+```
+KIMI_API_KEY=sk-your-kimi-api-key-here
+```
+获取方式：访问 https://platform.moonshot.cn/
+
+#### 方案2: 百度文心一言
+```
+BAIDU_API_KEY=your-baidu-api-key
+BAIDU_SECRET_KEY=your-baidu-secret-key
+```
+获取方式：访问 https://cloud.baidu.com/product/wenxinworkshop
+
+#### 方案3: 阿里通义千问
+```
+QWEN_API_KEY=your-qwen-api-key
+```
+获取方式：访问 https://dashscope.aliyun.com/
+
+#### 方案4: OpenAI (备选)
 ```
 OPENAI_API_KEY=sk-your-openai-api-key-here
 ```
+获取方式：访问 https://platform.openai.com/api-keys
 
-获取OpenAI API密钥：
-1. 访问 https://platform.openai.com/api-keys
-2. 创建新的API密钥
-3. 将密钥添加到Vercel项目的环境变量中
+**智能重试**: 系统会按优先级自动尝试不同的AI服务，确保高可用性。
 
 ### 3. 本地开发
 

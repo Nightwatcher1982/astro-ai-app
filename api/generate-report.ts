@@ -62,33 +62,14 @@ async function generateAIAnalysis(sunSign: string, moonSign: string, risingSign:
   try {
     const prompt = createAnalysisPrompt(sunSign, moonSign, risingSign);
     
-    // 这里我们使用OpenAI API，你也可以换成其他AI服务
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: 'gpt-3.5-turbo',
-      messages: [
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      max_tokens: 500,
-      temperature: 0.7
-    }, {
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (response.data.choices && response.data.choices.length > 0) {
-      return response.data.choices[0].message.content.trim();
-    } else {
-      throw new Error('AI API returned no response');
-    }
-  } catch (error) {
-    console.error('AI API error:', error);
+    // 使用智能重试机制，优先使用国内AI服务
+    const { callAIWithFallback } = await import('./ai-services');
+    return await callAIWithFallback(prompt);
     
-    // 如果AI API失败，返回一个基础的分析作为备选
+  } catch (error) {
+    console.error('All AI services failed:', error);
+    
+    // 如果所有AI服务都失败，返回基础分析作为备选
     return generateFallbackAnalysis(sunSign, moonSign, risingSign);
   }
 }
