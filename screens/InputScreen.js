@@ -11,6 +11,7 @@ import {
   Platform
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { getApiUrl, API_ENDPOINTS } from '../config/api';
 
 const InputScreen = ({ navigation }) => {
   const [date, setDate] = useState(new Date());
@@ -51,13 +52,7 @@ const InputScreen = ({ navigation }) => {
     setLoading(true);
 
     try {
-      // 在生产环境中，这里应该是你的Vercel部署URL
-      // 例如：https://your-project-name.vercel.app/api/generate-report
-      const apiUrl = __DEV__ 
-        ? 'http://localhost:3000/api/generate-report' 
-        : 'https://your-vercel-app.vercel.app/api/generate-report';
-      
-      const response = await fetch(apiUrl, {
+      const response = await fetch(getApiUrl(API_ENDPOINTS.generateReport), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
