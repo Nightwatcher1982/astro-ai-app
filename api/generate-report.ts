@@ -13,7 +13,7 @@ interface AstroReport {
   sunSign: string;
   moonSign: string;
   risingSign: string;
-  analysis?: string;
+  analysis: string;
 }
 
 // 地理编码结果类型
@@ -28,6 +28,85 @@ const ZODIAC_SIGNS = [
   '白羊座', '金牛座', '双子座', '巨蟹座', '狮子座', '处女座',
   '天秤座', '天蝎座', '射手座', '摩羯座', '水瓶座', '双鱼座'
 ];
+
+// AI分析Prompt模板
+function createAnalysisPrompt(sunSign: string, moonSign: string, risingSign: string): string {
+  return `你是一位温暖、智慧、充满洞察力的AI占星师。请根据以下星盘信息，为用户生成一份积极、深刻、个性化的性格分析报告。
+
+**星盘信息：**
+- 太阳星座：${sunSign}（代表核心自我、生命力和主要性格特质）
+- 月亮星座：${moonSign}（代表内在情感、潜意识和情绪需求）
+- 上升星座：${risingSign}（代表外在表现、第一印象和人生态度）
+
+**请按照以下要求生成分析报告：**
+
+1. **语调风格**：温暖、积极、有同理心，避免消极或宿命论的表达
+2. **内容深度**：深入但不晦涩，专业但不冷漠
+3. **字数要求**：250-300字
+4. **结构建议**：
+   - 开头：温暖的问候和整体性格概述
+   - 中间：分别从太阳、月亮、上升星座的角度分析性格特质
+   - 结尾：积极的鼓励和潜能发掘
+
+**重要提示：**
+- 强调用户的优势和潜能
+- 提供建设性的自我认知建议
+- 避免预测具体事件，专注于性格分析
+- 语言要亲切自然，就像和朋友聊天一样
+
+请直接输出分析报告，不要包含任何前缀或解释。`;
+}
+
+// 调用AI API生成分析报告
+async function generateAIAnalysis(sunSign: string, moonSign: string, risingSign: string): Promise<string> {
+  try {
+    const prompt = createAnalysisPrompt(sunSign, moonSign, risingSign);
+    
+    // 这里我们使用OpenAI API，你也可以换成其他AI服务
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      max_tokens: 500,
+      temperature: 0.7
+    }, {
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.data.choices && response.data.choices.length > 0) {
+      return response.data.choices[0].message.content.trim();
+    } else {
+      throw new Error('AI API returned no response');
+    }
+  } catch (error) {
+    console.error('AI API error:', error);
+    
+    // 如果AI API失败，返回一个基础的分析作为备选
+    return generateFallbackAnalysis(sunSign, moonSign, risingSign);
+  }
+}
+
+// 备选分析生成函数（当AI API不可用时使用）
+function generateFallbackAnalysis(sunSign: string, moonSign: string, risingSign: string): string {
+  return `你好！根据你的星盘信息，我看到了一个独特而美好的你。
+
+你的太阳星座是${sunSign}，这意味着你的核心性格充满了${sunSign}的特质。你拥有独特的生命力和个人魅力，这是你最闪亮的地方。
+
+你的月亮星座是${moonSign}，这揭示了你内心深处的情感世界。${moonSign}的月亮让你在情感上有着特别的敏感度和直觉力，这是你的情感智慧所在。
+
+你的上升星座是${risingSign}，这影响着你给别人的第一印象。${risingSign}的上升让你在与人交往时展现出独特的魅力和风格。
+
+这三个星座的组合让你成为了一个立体而丰富的人。建议你多关注自己的内在需求，同时也要勇敢地展现真实的自己。相信你的直觉，它会指引你走向属于你的美好未来。
+
+记住，星盘只是一个工具，真正的力量在于你如何运用这些天赋去创造属于自己的人生。`;
+}
 
 // 地理编码函数 - 将城市名转换为经纬度
 async function geocodeLocation(location: string): Promise<GeocodingResult> {
@@ -132,13 +211,19 @@ export default async function handler(
     const moonSign = calculateMoonSign(birthDate);
     const risingSign = calculateRisingSign(birthDate, hour, geoResult.lat);
 
+    console.log(`Calculated signs: Sun=${sunSign}, Moon=${moonSign}, Rising=${risingSign}`);
+
+    // 生成AI分析报告
+    const analysis = await generateAIAnalysis(sunSign, moonSign, risingSign);
+
     const report: AstroReport = {
       sunSign,
       moonSign,
-      risingSign
+      risingSign,
+      analysis
     };
 
-    console.log(`Calculated signs: Sun=${sunSign}, Moon=${moonSign}, Rising=${risingSign}`);
+    console.log(`Generated analysis: ${analysis.substring(0, 100)}...`);
 
     return res.status(200).json({
       success: true,
