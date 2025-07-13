@@ -26,6 +26,19 @@ const server = http.createServer(async (req, res) => {
       'Content-Length': Buffer.byteLength(pingResponse, 'utf8')
     });
     res.end(pingResponse);
+  } else if (parsedUrl.pathname === '/api/test' && req.method === 'GET') {
+    // 健康检查端点
+    const healthResponse = JSON.stringify({ 
+      success: true, 
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      version: '2.0.0'
+    });
+    res.writeHead(200, { 
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(healthResponse, 'utf8')
+    });
+    res.end(healthResponse);
   } else if (parsedUrl.pathname === '/api/generate-report' && req.method === 'POST') {
     let body = '';
     
@@ -508,11 +521,12 @@ ${planetHouses ? '- 结合宫位影响进行分析' : ''}
   };
 }
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log('🚀 星盘AI服务器启动成功! (含宫位系统)');
   console.log(`📡 服务器地址: http://localhost:${PORT}`);
   console.log(`🌟 API端点: http://localhost:${PORT}/api/generate-report`);
+  console.log(`🩺 健康检查端点: http://localhost:${PORT}/api/test`);
   console.log('');
   console.log('💡 现在可以在Expo应用中测试完整的星盘分析了！');
   console.log('🏠 新增功能：十二宫位系统和宫位分析');

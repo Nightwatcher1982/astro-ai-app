@@ -1,0 +1,11 @@
+[build]
+command = "npm install"
+
+[deploy]
+start = "node server.js"
+healthcheckPath = "/api/test"
+healthcheckTimeout = 100
+
+[env]
+NODE_ENV = "production"
+PORT = "${{ PORT }}" 

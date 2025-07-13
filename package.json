@@ -7,10 +7,15 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "dev": "vercel dev",
+    "server": "node server.js",
+    "server:dev": "nodemon server.js",
     "test-api": "node test-api.js",
-    "build": "vercel build",
-    "deploy": "vercel --prod"
+    "test-health": "curl http://localhost:3000/api/test || echo 'Server not running'",
+    "deploy:railway": "railway up",
+    "deploy:heroku": "git push heroku main",
+    "build:android": "npx expo build:android",
+    "build:ios": "npx expo build:ios",
+    "publish": "npx expo publish"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
