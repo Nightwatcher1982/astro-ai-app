@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,14 +12,27 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { getApiUrl, API_ENDPOINTS } from '../config/api';
+import ProfileStorage from '../services/ProfileStorage';
 
-const InputScreen = ({ navigation }) => {
+const InputScreen = ({ route, navigation }) => {
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState(new Date());
   const [location, setLocation] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [currentProfileId, setCurrentProfileId] = useState(null);
+
+  // 处理从档案预填充的数据
+  useEffect(() => {
+    if (route.params?.prefilledProfile) {
+      const prefilled = route.params.prefilledProfile;
+      setDate(new Date(prefilled.date));
+      setTime(new Date(`2000-01-01T${prefilled.time}:00`));
+      setLocation(prefilled.location);
+      setCurrentProfileId(prefilled.profileId || null);
+    }
+  }, [route.params]);
 
   const handleDateChange = (event, selectedDate) => {
     setShowDatePicker(false);
@@ -52,31 +65,66 @@ const InputScreen = ({ navigation }) => {
     setLoading(true);
 
     try {
-      const response = await fetch(getApiUrl(API_ENDPOINTS.generateReport), {
+      // 创建 AbortController 用于设置超时
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+
+      const requestUrl = getApiUrl(API_ENDPOINTS.generateReport);
+      const requestData = {
+        date: formatDate(date),
+        time: formatTime(time),
+        location: location.trim()
+      };
+
+      console.log('🚀 发送请求到:', requestUrl);
+      console.log('📝 请求数据:', requestData);
+
+      // 简化调试信息
+      console.log('🚀 [v2.0] 开始网络请求...');
+      const response = await fetch(requestUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          date: formatDate(date),
-          time: formatTime(time),
-          location: location.trim()
-        }),
+        body: JSON.stringify(requestData),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
+      console.log('✅ 响应状态:', response.status, response.statusText);
+
       const result = await response.json();
+      console.log('📥 响应数据:', result);
 
       if (result.success) {
+        // 如果是从档案生成的分析，保存到档案历史中
+        if (currentProfileId) {
+          try {
+            await ProfileStorage.saveAnalysisToProfile(
+              currentProfileId, 
+              result.data, 
+              'full'
+            );
+          } catch (error) {
+            console.warn('保存分析到档案失败:', error);
+            // 不阻断用户流程，只是警告
+          }
+        }
+
         navigation.navigate('Result', { 
           report: result.data,
-          location: result.location 
+          location: result.location,
+          profileId: currentProfileId // 传递profileId以便在结果页面使用
         });
       } else {
         Alert.alert('错误', result.error || '生成报告失败');
       }
     } catch (error) {
       console.error('Request error:', error);
-      Alert.alert('错误', '网络请求失败，请检查网络连接');
+      
+      console.log('❌ [v2.0] 网络请求失败:', error);
+      Alert.alert('🔧 [v2.0] 网络调试', `错误类型: ${error.name}\n错误信息: ${error.message}\n\n浏览器测试已通过，这可能是React Native特有问题。`);
     } finally {
       setLoading(false);
     }
@@ -124,6 +172,16 @@ const InputScreen = ({ navigation }) => {
               autoCapitalize="words"
             />
           </View>
+
+          {/* 从档案选择按钮 */}
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => navigation.navigate('ProfilesTab')}
+          >
+            <Text style={styles.profileButtonText}>
+              📁 从我的档案中选择
+            </Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.submitButton, loading && styles.submitButtonDisabled]}
@@ -226,6 +284,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#bdc3c7',
     color: '#2c3e50',
+  },
+  profileButton: {
+    backgroundColor: '#3498db',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  profileButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   submitButton: {
     backgroundColor: '#8e44ad',

@@ -1,8 +1,8 @@
 // API配置文件
 export const API_CONFIG = {
-  // 开发环境使用本地服务器（需要运行 vercel dev）
+  // 开发环境使用本地服务器（需要运行自定义server.js）
   development: {
-    baseUrl: 'http://localhost:3000',
+    baseUrl: 'http://192.168.3.115:3000',
   },
   // 生产环境使用Vercel部署的URL
   production: {

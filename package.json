@@ -13,22 +13,27 @@
     "deploy": "vercel --prod"
   },
   "dependencies": {
-    "@react-native-community/datetimepicker": "^8.4.2",
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/datetimepicker": "8.4.1",
+    "@react-navigation/bottom-tabs": "^7.4.2",
     "@react-navigation/native": "^7.1.14",
     "@react-navigation/stack": "^7.4.2",
+    "@types/react": "~19.0.10",
     "astrology-js": "^0.6.0",
     "axios": "^1.10.0",
+    "dotenv": "^17.2.0",
     "expo": "~53.0.17",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
     "react-native": "0.79.5",
-    "react-native-safe-area-context": "^5.5.2",
+    "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "^4.11.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@types/node": "^24.0.13",
     "@vercel/node": "^5.3.5",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "vercel": "^44.4.1"
   },
