@@ -27,6 +27,7 @@
     "astrology-js": "^0.6.0",
     "axios": "^1.10.0",
     "dotenv": "^17.2.0",
+    "eas-cli": "^16.15.0",
     "expo": "~53.0.17",
     "expo-status-bar": "~2.2.3",
     "node-fetch": "^2.7.0",

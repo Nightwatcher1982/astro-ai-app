@@ -10,9 +10,10 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { getApiUrl, API_ENDPOINTS } from '../config/api';
 import ProfileStorage from '../services/ProfileStorage';
+import DateTimePicker from '../components/DateTimePicker';
+import CitySelector from '../components/CitySelector';
 
 const InputScreen = ({ route, navigation }) => {
   const [date, setDate] = useState(new Date());
@@ -20,6 +21,7 @@ const InputScreen = ({ route, navigation }) => {
   const [location, setLocation] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showCitySelector, setShowCitySelector] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentProfileId, setCurrentProfileId] = useState(null);
 
@@ -34,18 +36,19 @@ const InputScreen = ({ route, navigation }) => {
     }
   }, [route.params]);
 
-  const handleDateChange = (event, selectedDate) => {
+  const handleDateChange = (selectedDate) => {
+    setDate(selectedDate);
     setShowDatePicker(false);
-    if (selectedDate) {
-      setDate(selectedDate);
-    }
   };
 
-  const handleTimeChange = (event, selectedTime) => {
+  const handleTimeChange = (selectedTime) => {
+    setTime(selectedTime);
     setShowTimePicker(false);
-    if (selectedTime) {
-      setTime(selectedTime);
-    }
+  };
+
+  const handleCitySelect = (city) => {
+    setLocation(city);
+    setShowCitySelector(false);
   };
 
   const formatDate = (date) => {
@@ -164,13 +167,15 @@ const InputScreen = ({ route, navigation }) => {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>出生地点</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="请输入城市名称，如：北京、上海、纽约"
-              value={location}
-              onChangeText={setLocation}
-              autoCapitalize="words"
-            />
+            <TouchableOpacity
+              style={styles.cityButton}
+              onPress={() => setShowCitySelector(true)}
+            >
+              <Text style={[styles.cityText, !location && styles.placeholderText]}>
+                {location || '请选择出生城市'}
+              </Text>
+              <Text style={styles.cityArrow}>›</Text>
+            </TouchableOpacity>
           </View>
 
           {/* 从档案选择按钮 */}
@@ -194,24 +199,30 @@ const InputScreen = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {showDatePicker && (
-          <DateTimePicker
-            value={date}
-            mode="date"
-            display="default"
-            onChange={handleDateChange}
-            maximumDate={new Date()}
-          />
-        )}
+        <DateTimePicker
+          visible={showDatePicker}
+          onClose={() => setShowDatePicker(false)}
+          onConfirm={handleDateChange}
+          initialDate={date}
+          mode="date"
+          title="选择出生日期"
+        />
 
-        {showTimePicker && (
-          <DateTimePicker
-            value={time}
-            mode="time"
-            display="default"
-            onChange={handleTimeChange}
-          />
-        )}
+        <DateTimePicker
+          visible={showTimePicker}
+          onClose={() => setShowTimePicker(false)}
+          onConfirm={handleTimeChange}
+          initialDate={time}
+          mode="time"
+          title="选择出生时间"
+        />
+
+        <CitySelector
+          visible={showCitySelector}
+          onClose={() => setShowCitySelector(false)}
+          onSelect={handleCitySelect}
+          title="选择出生城市"
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -284,6 +295,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#bdc3c7',
     color: '#2c3e50',
+  },
+  cityButton: {
+    backgroundColor: '#ecf0f1',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#bdc3c7',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cityText: {
+    fontSize: 16,
+    color: '#2c3e50',
+  },
+  placeholderText: {
+    color: '#7f8c8d',
+  },
+  cityArrow: {
+    fontSize: 18,
+    color: '#7f8c8d',
   },
   profileButton: {
     backgroundColor: '#3498db',

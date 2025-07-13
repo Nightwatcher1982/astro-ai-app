@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 12.0.0"
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -11,15 +12,26 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "ios": {
+        "simulator": false
       }
     },
     "production": {
       "android": {
         "buildType": "apk"
+      },
+      "ios": {
+        "autoIncrement": true
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+              "ios": {
+          "appleId": "xiang_huang@hotmail.com",
+          "ascAppId": "6748577786"
+        }
+    }
   }
-} 
+}

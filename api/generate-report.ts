@@ -120,25 +120,43 @@ async function geocodeLocation(location: string): Promise<GeocodingResult> {
   }
 }
 
-// 简化的星座计算函数
+// 精确的星座计算函数
 function calculateZodiacSign(month: number, day: number): string {
-  const dates = [
-    [3, 21], [4, 20], [5, 21], [6, 21], [7, 23], [8, 23],
-    [9, 23], [10, 23], [11, 22], [12, 22], [1, 20], [2, 19]
+  const zodiacDates = [
+    [1, 20, 2, 18, 10],  // 水瓶座 (1/20 - 2/18)
+    [2, 19, 3, 20, 11],  // 双鱼座 (2/19 - 3/20)
+    [3, 21, 4, 19, 0],   // 白羊座 (3/21 - 4/19)
+    [4, 20, 5, 20, 1],   // 金牛座 (4/20 - 5/20)
+    [5, 21, 6, 20, 2],   // 双子座 (5/21 - 6/20)
+    [6, 21, 7, 22, 3],   // 巨蟹座 (6/21 - 7/22)
+    [7, 23, 8, 22, 4],   // 狮子座 (7/23 - 8/22)
+    [8, 23, 9, 22, 5],   // 处女座 (8/23 - 9/22)
+    [9, 23, 10, 22, 6],  // 天秤座 (9/23 - 10/22)
+    [10, 23, 11, 21, 7], // 天蝎座 (10/23 - 11/21)
+    [11, 22, 12, 21, 8], // 射手座 (11/22 - 12/21)
+    [12, 22, 12, 31, 9], // 摩羯座 (12/22 - 12/31)
+    [1, 1, 1, 19, 9]     // 摩羯座 (1/1 - 1/19)
   ];
-  
-  for (let i = 0; i < dates.length; i++) {
-    const [signMonth, signDay] = dates[i];
-    if (month === signMonth && day >= signDay) {
-      return ZODIAC_SIGNS[i];
-    }
-    if (month === signMonth - 1 && day >= dates[i === 0 ? 11 : i - 1][1]) {
-      return ZODIAC_SIGNS[i === 0 ? 11 : i - 1];
+
+  for (let i = 0; i < zodiacDates.length; i++) {
+    const [startMonth, startDay, endMonth, endDay, signIndex] = zodiacDates[i];
+    
+    // 处理跨月份的情况
+    if (startMonth === endMonth) {
+      // 同一个月内
+      if (month === startMonth && day >= startDay && day <= endDay) {
+        return ZODIAC_SIGNS[signIndex];
+      }
+    } else {
+      // 跨月份
+      if ((month === startMonth && day >= startDay) || 
+          (month === endMonth && day <= endDay)) {
+        return ZODIAC_SIGNS[signIndex];
+      }
     }
   }
   
-  // 默认返回摩羯座
-  return ZODIAC_SIGNS[9];
+  return ZODIAC_SIGNS[9]; // 默认摩羯座
 }
 
 // 模拟月亮星座计算（实际需要更复杂的天文计算）

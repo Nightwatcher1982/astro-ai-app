@@ -11,9 +11,10 @@ import {
   Platform,
   Modal
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import ProfileStorage from '../services/ProfileStorage';
 import { validateProfile, DEFAULT_TAGS } from '../types/profile';
+import DateTimePicker from '../components/DateTimePicker';
+import CitySelector from '../components/CitySelector';
 
 const AddProfileScreen = ({ route, navigation }) => {
   const { profileId } = route.params || {};
@@ -31,6 +32,7 @@ const AddProfileScreen = ({ route, navigation }) => {
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showCitySelector, setShowCitySelector] = useState(false);
   const [showTagsModal, setShowTagsModal] = useState(false);
   const [customTag, setCustomTag] = useState('');
   const [loading, setLoading] = useState(false);
@@ -76,19 +78,21 @@ const AddProfileScreen = ({ route, navigation }) => {
   };
 
   // 日期选择处理
-  const handleDateChange = (event, selectedDate) => {
+  const handleDateChange = (selectedDate) => {
+    updateField('birthday', selectedDate);
     setShowDatePicker(false);
-    if (selectedDate) {
-      updateField('birthday', selectedDate);
-    }
   };
 
   // 时间选择处理
-  const handleTimeChange = (event, selectedTime) => {
+  const handleTimeChange = (selectedTime) => {
+    updateField('birthTime', selectedTime);
     setShowTimePicker(false);
-    if (selectedTime) {
-      updateField('birthTime', selectedTime);
-    }
+  };
+
+  // 城市选择处理
+  const handleCitySelect = (city) => {
+    updateField('birthPlace', city);
+    setShowCitySelector(false);
   };
 
   // 标签切换
@@ -336,13 +340,15 @@ const AddProfileScreen = ({ route, navigation }) => {
           {/* 出生地点 */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>出生地点 *</Text>
-            <TextInput
-              style={[styles.textInput, errors.birthPlace && styles.inputError]}
-              placeholder="请输入城市名称，如：北京、上海、纽约"
-              value={formData.birthPlace}
-              onChangeText={(value) => updateField('birthPlace', value)}
-              autoCapitalize="words"
-            />
+            <TouchableOpacity
+              style={[styles.cityButton, errors.birthPlace && styles.inputError]}
+              onPress={() => setShowCitySelector(true)}
+            >
+              <Text style={[styles.cityText, !formData.birthPlace && styles.placeholderText]}>
+                {formData.birthPlace || '请选择出生城市'}
+              </Text>
+              <Text style={styles.cityArrow}>›</Text>
+            </TouchableOpacity>
             {renderError('birthPlace')}
           </View>
 
@@ -409,25 +415,32 @@ const AddProfileScreen = ({ route, navigation }) => {
       </ScrollView>
 
       {/* 日期选择器 */}
-      {showDatePicker && (
-        <DateTimePicker
-          value={formData.birthday}
-          mode="date"
-          display="default"
-          onChange={handleDateChange}
-          maximumDate={new Date()}
-        />
-      )}
+      <DateTimePicker
+        visible={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onConfirm={handleDateChange}
+        initialDate={formData.birthday}
+        mode="date"
+        title="选择出生日期"
+      />
 
       {/* 时间选择器 */}
-      {showTimePicker && (
-        <DateTimePicker
-          value={formData.birthTime}
-          mode="time"
-          display="default"
-          onChange={handleTimeChange}
-        />
-      )}
+      <DateTimePicker
+        visible={showTimePicker}
+        onClose={() => setShowTimePicker(false)}
+        onConfirm={handleTimeChange}
+        initialDate={formData.birthTime}
+        mode="time"
+        title="选择出生时间"
+      />
+
+      {/* 城市选择器 */}
+      <CitySelector
+        visible={showCitySelector}
+        onClose={() => setShowCitySelector(false)}
+        onSelect={handleCitySelect}
+        title="选择出生城市"
+      />
 
       {/* 标签选择模态框 */}
       {renderTagsModal()}
@@ -486,6 +499,27 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 16,
     color: '#2c3e50',
+  },
+  cityButton: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e1e8ed',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cityText: {
+    fontSize: 16,
+    color: '#2c3e50',
+  },
+  placeholderText: {
+    color: '#7f8c8d',
+  },
+  cityArrow: {
+    fontSize: 18,
+    color: '#7f8c8d',
   },
   tagsButton: {
     backgroundColor: '#f8f9fa',
