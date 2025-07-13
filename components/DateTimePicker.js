@@ -20,6 +20,7 @@ const CustomDateTimePicker = ({
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [showPicker, setShowPicker] = useState(false);
   const [currentMode, setCurrentMode] = useState('date');
+  const [tempDate, setTempDate] = useState(initialDate); // 临时存储iOS picker的选择
 
   // 设置日期范围：当前年份-100年 到 当前年份-20年
   const currentYear = new Date().getFullYear();
@@ -57,10 +58,14 @@ const CustomDateTimePicker = ({
   const handleDateChange = (event, date) => {
     if (Platform.OS === 'android') {
       setShowPicker(false);
-    }
-    
-    if (date) {
-      setSelectedDate(date);
+      if (date) {
+        setSelectedDate(date);
+      }
+    } else {
+      // iOS：实时更新临时日期
+      if (date) {
+        setTempDate(date);
+      }
     }
   };
 
@@ -71,7 +76,18 @@ const CustomDateTimePicker = ({
 
   const openPicker = (pickerMode) => {
     setCurrentMode(pickerMode);
+    setTempDate(selectedDate); // 重置临时日期为当前选择的日期
     setShowPicker(true);
+  };
+
+  const handleIOSPickerCancel = () => {
+    setTempDate(selectedDate); // 重置为原来的值
+    setShowPicker(false);
+  };
+
+  const handleIOSPickerConfirm = () => {
+    setSelectedDate(tempDate); // 保存临时选择的日期
+    setShowPicker(false);
   };
 
   const renderIOSPicker = () => {
@@ -82,13 +98,13 @@ const CustomDateTimePicker = ({
         visible={showPicker}
         transparent
         animationType="slide"
-        onRequestClose={() => setShowPicker(false)}
+        onRequestClose={handleIOSPickerCancel}
       >
         <View style={styles.iosModalOverlay}>
           <View style={styles.iosPickerContainer}>
             <View style={styles.iosPickerHeader}>
               <TouchableOpacity 
-                onPress={() => setShowPicker(false)}
+                onPress={handleIOSPickerCancel}
                 style={styles.iosHeaderButton}
               >
                 <Text style={styles.iosHeaderButtonText}>取消</Text>
@@ -97,21 +113,25 @@ const CustomDateTimePicker = ({
                 {currentMode === 'date' ? '选择日期' : '选择时间'}
               </Text>
               <TouchableOpacity 
-                onPress={() => setShowPicker(false)}
+                onPress={handleIOSPickerConfirm}
                 style={styles.iosHeaderButton}
               >
                 <Text style={[styles.iosHeaderButtonText, styles.iosConfirmText]}>完成</Text>
               </TouchableOpacity>
             </View>
-            <DateTimePicker
-              value={selectedDate}
-              mode={currentMode}
-              display="spinner"
-              onChange={handleDateChange}
-              minimumDate={minDate}
-              maximumDate={maxDate}
-              style={styles.iosPicker}
-            />
+            <View style={styles.iosPickerWrapper}>
+              <DateTimePicker
+                value={tempDate}
+                mode={currentMode}
+                display="spinner"
+                onChange={handleDateChange}
+                minimumDate={minDate}
+                maximumDate={maxDate}
+                locale="zh-CN"
+                style={styles.iosPicker}
+                textColor="#000000"
+              />
+            </View>
           </View>
         </View>
       </Modal>
@@ -129,6 +149,7 @@ const CustomDateTimePicker = ({
         onChange={handleDateChange}
         minimumDate={minDate}
         maximumDate={maxDate}
+        locale="zh-CN"
       />
     );
   };
@@ -320,8 +341,15 @@ const styles = StyleSheet.create({
   iosConfirmText: {
     fontWeight: '600',
   },
+  iosPickerWrapper: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   iosPicker: {
     height: 216,
+    width: '100%',
   },
 });
 
