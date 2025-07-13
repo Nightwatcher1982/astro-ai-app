@@ -183,3 +183,28 @@ curl -X POST https://your-deployment-url.com/api/generate-report \
 2. 验证环境变量配置
 3. 测试本地开发环境
 4. 查看平台官方文档 
+
+**或者，如果你已经知道仓库URL，我可以直接帮你执行。请告诉我你创建的GitHub仓库URL，格式类似：**
+`https://github.com/你的用户名/astro-ai-app.git`
+
+## 🚄 第三步：在Railway上部署
+
+一旦代码推送到GitHub后，我们就可以在Railway上部署了：
+
+1. **访问 [Railway](https://railway.app)**
+2. **登录你的Railway账号**
+3. **点击 "New Project"**
+4. **选择 "Deploy from GitHub repo"**
+5. **选择你刚创建的 `astro-ai-app` 仓库**
+6. **Railway会自动检测到Node.js项目并开始部署**
+
+## 🔧 第四步：配置环境变量
+
+部署过程中，你需要在Railway中添加环境变量：
+
+1. **在Railway项目面板中，点击 "Variables" 标签**
+2. **添加以下环境变量：**
+   - `QWEN_API_KEY`: 你的通义千问API密钥
+   - `NODE_ENV`: `production`
+
+**你现在可以先去创建GitHub仓库，然后告诉我仓库URL，我来帮你完成剩下的推送步骤！** 📚✨ 
