@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "星盘AI分析",
+    "name": "阿牧星盘",
     "slug": "astro-ai-app",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "description": "专业的星盘分析应用，提供详细的占星图解读和个性化分析报告",
+    "description": "阿牧星盘 - 专业的星盘分析应用，提供详细的占星图解读和个性化分析报告",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -25,15 +25,12 @@
       "edgeToEdgeEnabled": true,
       "usesCleartextTraffic": true,
       "package": "com.astroai.app",
-      "versionCode": 2
+      "versionCode": 3
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "react-native-gesture-handler",
-      "react-native-reanimated/plugin"
-    ],
+
     "extra": {
       "eas": {
         "projectId": "0cf396ff-8021-46fe-93a9-58682f6d6d4f"
