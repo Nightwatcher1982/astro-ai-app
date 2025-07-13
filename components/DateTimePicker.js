@@ -15,15 +15,17 @@ const { width, height } = Dimensions.get('window');
 
 // 滚轮选择器组件
 const WheelPicker = ({ data, selectedIndex, onValueChange, itemHeight = 44 }) => {
-  const scrollY = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef(null);
 
   useEffect(() => {
-    if (scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({ 
-        y: selectedIndex * itemHeight, 
-        animated: false 
-      });
+    if (scrollViewRef.current && selectedIndex >= 0) {
+      // 延迟滚动以确保组件已完全渲染
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({ 
+          y: selectedIndex * itemHeight, 
+          animated: false 
+        });
+      }, 100);
     }
   }, [selectedIndex, itemHeight]);
 
@@ -38,11 +40,17 @@ const WheelPicker = ({ data, selectedIndex, onValueChange, itemHeight = 44 }) =>
   const handleScrollEnd = (event) => {
     const y = event.nativeEvent.contentOffset.y;
     const index = Math.round(y / itemHeight);
+    const clampedIndex = Math.max(0, Math.min(index, data.length - 1));
+    
     if (scrollViewRef.current) {
       scrollViewRef.current.scrollTo({ 
-        y: index * itemHeight, 
+        y: clampedIndex * itemHeight, 
         animated: true 
       });
+    }
+    
+    if (clampedIndex !== selectedIndex) {
+      onValueChange(clampedIndex);
     }
   };
 
@@ -57,6 +65,8 @@ const WheelPicker = ({ data, selectedIndex, onValueChange, itemHeight = 44 }) =>
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         onMomentumScrollEnd={handleScrollEnd}
+        onScrollEndDrag={handleScrollEnd}
+        scrollEventThrottle={16}
         snapToInterval={itemHeight}
         decelerationRate="fast"
         contentContainerStyle={{
@@ -68,15 +78,16 @@ const WheelPicker = ({ data, selectedIndex, onValueChange, itemHeight = 44 }) =>
             key={index}
             style={[
               styles.wheelItem,
-              { height: itemHeight },
-              index === selectedIndex && styles.wheelItemSelected
+              { height: itemHeight }
             ]}
             onPress={() => {
               onValueChange(index);
-              scrollViewRef.current?.scrollTo({ 
-                y: index * itemHeight, 
-                animated: true 
-              });
+              setTimeout(() => {
+                scrollViewRef.current?.scrollTo({ 
+                  y: index * itemHeight, 
+                  animated: true 
+                });
+              }, 50);
             }}
           >
             <Text style={[

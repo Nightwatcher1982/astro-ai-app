@@ -122,41 +122,43 @@ async function geocodeLocation(location: string): Promise<GeocodingResult> {
 
 // 精确的星座计算函数
 function calculateZodiacSign(month: number, day: number): string {
-  const zodiacDates = [
-    [1, 20, 2, 18, 10],  // 水瓶座 (1/20 - 2/18)
-    [2, 19, 3, 20, 11],  // 双鱼座 (2/19 - 3/20)
-    [3, 21, 4, 19, 0],   // 白羊座 (3/21 - 4/19)
-    [4, 20, 5, 20, 1],   // 金牛座 (4/20 - 5/20)
-    [5, 21, 6, 20, 2],   // 双子座 (5/21 - 6/20)
-    [6, 21, 7, 22, 3],   // 巨蟹座 (6/21 - 7/22)
-    [7, 23, 8, 22, 4],   // 狮子座 (7/23 - 8/22)
-    [8, 23, 9, 22, 5],   // 处女座 (8/23 - 9/22)
-    [9, 23, 10, 22, 6],  // 天秤座 (9/23 - 10/22)
-    [10, 23, 11, 21, 7], // 天蝎座 (10/23 - 11/21)
-    [11, 22, 12, 21, 8], // 射手座 (11/22 - 12/21)
-    [12, 22, 12, 31, 9], // 摩羯座 (12/22 - 12/31)
-    [1, 1, 1, 19, 9]     // 摩羯座 (1/1 - 1/19)
+  // 星座日期范围（修正版本）
+  const zodiacRanges = [
+    { start: [3, 21], end: [4, 19], sign: '白羊座' },   // 白羊座 3/21-4/19
+    { start: [4, 20], end: [5, 20], sign: '金牛座' },   // 金牛座 4/20-5/20
+    { start: [5, 21], end: [6, 21], sign: '双子座' },   // 双子座 5/21-6/21
+    { start: [6, 22], end: [7, 22], sign: '巨蟹座' },   // 巨蟹座 6/22-7/22
+    { start: [7, 23], end: [8, 22], sign: '狮子座' },   // 狮子座 7/23-8/22
+    { start: [8, 23], end: [9, 22], sign: '处女座' },   // 处女座 8/23-9/22
+    { start: [9, 23], end: [10, 23], sign: '天秤座' },  // 天秤座 9/23-10/23
+    { start: [10, 24], end: [11, 22], sign: '天蝎座' }, // 天蝎座 10/24-11/22
+    { start: [11, 23], end: [12, 21], sign: '射手座' }, // 射手座 11/23-12/21
+    { start: [12, 22], end: [12, 31], sign: '摩羯座' }, // 摩羯座 12/22-12/31
+    { start: [1, 1], end: [1, 19], sign: '摩羯座' },    // 摩羯座 1/1-1/19
+    { start: [1, 20], end: [2, 18], sign: '水瓶座' },   // 水瓶座 1/20-2/18
+    { start: [2, 19], end: [3, 20], sign: '双鱼座' }    // 双鱼座 2/19-3/20
   ];
 
-  for (let i = 0; i < zodiacDates.length; i++) {
-    const [startMonth, startDay, endMonth, endDay, signIndex] = zodiacDates[i];
+  for (const range of zodiacRanges) {
+    const [startMonth, startDay] = range.start;
+    const [endMonth, endDay] = range.end;
     
-    // 处理跨月份的情况
     if (startMonth === endMonth) {
-      // 同一个月内
+      // 同月内的星座
       if (month === startMonth && day >= startDay && day <= endDay) {
-        return ZODIAC_SIGNS[signIndex];
+        return range.sign;
       }
     } else {
-      // 跨月份
+      // 跨月的星座
       if ((month === startMonth && day >= startDay) || 
           (month === endMonth && day <= endDay)) {
-        return ZODIAC_SIGNS[signIndex];
+        return range.sign;
       }
     }
   }
   
-  return ZODIAC_SIGNS[9]; // 默认摩羯座
+  // 如果没有匹配到，返回默认值
+  return '摩羯座';
 }
 
 // 模拟月亮星座计算（实际需要更复杂的天文计算）
