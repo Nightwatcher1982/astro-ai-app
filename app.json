@@ -2,7 +2,7 @@
   "expo": {
     "name": "阿牧星盘",
     "slug": "astro-ai-app",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

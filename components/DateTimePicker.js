@@ -56,8 +56,12 @@ const WheelPicker = ({ data, selectedIndex, onValueChange, itemHeight = 44 }) =>
 
   return (
     <View style={styles.wheelContainer}>
-      <View style={styles.wheelMask} />
-      <View style={styles.wheelSelection} />
+      {/* 移除阻挡触摸的遮罩，改为渐变边缘效果 */}
+      <View style={styles.wheelTopGradient} pointerEvents="none" />
+      <View style={styles.wheelBottomGradient} pointerEvents="none" />
+      
+      {/* 选中区域指示器 */}
+      <View style={styles.wheelSelection} pointerEvents="none" />
       
       <ScrollView
         ref={scrollViewRef}
@@ -72,6 +76,7 @@ const WheelPicker = ({ data, selectedIndex, onValueChange, itemHeight = 44 }) =>
         contentContainerStyle={{
           paddingVertical: itemHeight * 2
         }}
+        nestedScrollEnabled={true}
       >
         {data.map((item, index) => (
           <TouchableOpacity
@@ -89,6 +94,7 @@ const WheelPicker = ({ data, selectedIndex, onValueChange, itemHeight = 44 }) =>
                 });
               }, 50);
             }}
+            activeOpacity={0.7}
           >
             <Text style={[
               styles.wheelItemText,
@@ -312,14 +318,25 @@ const styles = StyleSheet.create({
     height: 200,
     position: 'relative',
   },
-  wheelMask: {
+  wheelTopGradient: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
+    height: 50,
+    backgroundColor: 'transparent',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  wheelBottomGradient: {
+    position: 'absolute',
     bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    zIndex: 1,
+    left: 0,
+    right: 0,
+    height: 50,
+    backgroundColor: 'transparent',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   wheelSelection: {
     position: 'absolute',
@@ -331,10 +348,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#e1e8ed',
     backgroundColor: 'rgba(52, 152, 219, 0.1)',
-    zIndex: 2,
+    // 移除zIndex，避免阻挡触摸事件
   },
   wheelScrollView: {
     flex: 1,
+    // 确保ScrollView可以接收触摸事件
   },
   wheelItem: {
     justifyContent: 'center',
