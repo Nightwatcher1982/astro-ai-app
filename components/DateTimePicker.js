@@ -16,25 +16,24 @@ const { width, height } = Dimensions.get('window');
 // 滚轮选择器组件
 const WheelPicker = ({ data, selectedIndex, onValueChange, itemHeight = 44 }) => {
   const scrollViewRef = useRef(null);
+  const isScrollingRef = useRef(false);
+  const lastSelectedIndex = useRef(selectedIndex);
 
   useEffect(() => {
-    if (scrollViewRef.current && selectedIndex >= 0) {
-      // 延迟滚动以确保组件已完全渲染
+    // 只有当selectedIndex真正改变，且不在滚动中时才更新位置
+    if (scrollViewRef.current && selectedIndex !== lastSelectedIndex.current && !isScrollingRef.current) {
+      lastSelectedIndex.current = selectedIndex;
       setTimeout(() => {
         scrollViewRef.current?.scrollTo({ 
           y: selectedIndex * itemHeight, 
           animated: false 
         });
-      }, 100);
+      }, 50);
     }
   }, [selectedIndex, itemHeight]);
 
-  const handleScroll = (event) => {
-    const y = event.nativeEvent.contentOffset.y;
-    const index = Math.round(y / itemHeight);
-    if (index !== selectedIndex && index >= 0 && index < data.length) {
-      onValueChange(index);
-    }
+  const handleScrollBegin = () => {
+    isScrollingRef.current = true;
   };
 
   const handleScrollEnd = (event) => {
@@ -42,6 +41,7 @@ const WheelPicker = ({ data, selectedIndex, onValueChange, itemHeight = 44 }) =>
     const index = Math.round(y / itemHeight);
     const clampedIndex = Math.max(0, Math.min(index, data.length - 1));
     
+    // 确保滚动到正确位置
     if (scrollViewRef.current) {
       scrollViewRef.current.scrollTo({ 
         y: clampedIndex * itemHeight, 
@@ -49,14 +49,21 @@ const WheelPicker = ({ data, selectedIndex, onValueChange, itemHeight = 44 }) =>
       });
     }
     
+    // 更新选中值
     if (clampedIndex !== selectedIndex) {
+      lastSelectedIndex.current = clampedIndex;
       onValueChange(clampedIndex);
     }
+    
+    // 延迟标记滚动结束，避免立即触发useEffect
+    setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 100);
   };
 
   return (
     <View style={styles.wheelContainer}>
-      {/* 移除阻挡触摸的遮罩，改为渐变边缘效果 */}
+      {/* 渐变边缘效果 */}
       <View style={styles.wheelTopGradient} pointerEvents="none" />
       <View style={styles.wheelBottomGradient} pointerEvents="none" />
       
@@ -67,7 +74,7 @@ const WheelPicker = ({ data, selectedIndex, onValueChange, itemHeight = 44 }) =>
         ref={scrollViewRef}
         style={styles.wheelScrollView}
         showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
+        onScrollBeginDrag={handleScrollBegin}
         onMomentumScrollEnd={handleScrollEnd}
         onScrollEndDrag={handleScrollEnd}
         scrollEventThrottle={16}
@@ -86,12 +93,17 @@ const WheelPicker = ({ data, selectedIndex, onValueChange, itemHeight = 44 }) =>
               { height: itemHeight }
             ]}
             onPress={() => {
+              isScrollingRef.current = true;
+              lastSelectedIndex.current = index;
               onValueChange(index);
               setTimeout(() => {
                 scrollViewRef.current?.scrollTo({ 
                   y: index * itemHeight, 
                   animated: true 
                 });
+                setTimeout(() => {
+                  isScrollingRef.current = false;
+                }, 300);
               }, 50);
             }}
             activeOpacity={0.7}
