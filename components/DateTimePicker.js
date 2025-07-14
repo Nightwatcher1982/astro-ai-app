@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -22,10 +22,16 @@ const CustomDateTimePicker = ({
   const [currentMode, setCurrentMode] = useState('date');
   const [tempDate, setTempDate] = useState(initialDate); // 临时存储iOS picker的选择
 
-  // 设置日期范围：当前年份-100年 到 当前年份-20年
+  // 设置合理的日期范围：1900年 到 当前年份-18年（成年）
   const currentYear = new Date().getFullYear();
-  const minDate = new Date(currentYear - 100, 0, 1); // 100年前
-  const maxDate = new Date(currentYear - 20, 11, 31); // 20年前
+  const minDate = new Date(1900, 0, 1); // 1900年开始
+  const maxDate = new Date(currentYear - 18, 11, 31); // 18年前（确保成年）
+
+  // 当initialDate变化时，更新selectedDate和tempDate
+  useEffect(() => {
+    setSelectedDate(initialDate);
+    setTempDate(initialDate);
+  }, [initialDate]);
 
   const formatDate = (date) => {
     const year = date.getFullYear();
@@ -62,8 +68,8 @@ const CustomDateTimePicker = ({
         setSelectedDate(date);
       }
     } else {
-      // iOS：实时更新临时日期
-      if (date) {
+      // iOS：实时更新临时日期，确保值有效
+      if (date && event.type !== 'dismissed') {
         setTempDate(date);
       }
     }
@@ -76,17 +82,20 @@ const CustomDateTimePicker = ({
 
   const openPicker = (pickerMode) => {
     setCurrentMode(pickerMode);
-    setTempDate(selectedDate); // 重置临时日期为当前选择的日期
+    // 确保tempDate使用当前selectedDate的值
+    setTempDate(new Date(selectedDate.getTime()));
     setShowPicker(true);
   };
 
   const handleIOSPickerCancel = () => {
-    setTempDate(selectedDate); // 重置为原来的值
+    // 重置tempDate为原来的selectedDate
+    setTempDate(new Date(selectedDate.getTime())); 
     setShowPicker(false);
   };
 
   const handleIOSPickerConfirm = () => {
-    setSelectedDate(tempDate); // 保存临时选择的日期
+    // 保存tempDate到selectedDate
+    setSelectedDate(new Date(tempDate.getTime())); 
     setShowPicker(false);
   };
 
@@ -125,8 +134,8 @@ const CustomDateTimePicker = ({
                 mode={currentMode}
                 display="spinner"
                 onChange={handleDateChange}
-                minimumDate={minDate}
-                maximumDate={maxDate}
+                minimumDate={currentMode === 'date' ? minDate : undefined}
+                maximumDate={currentMode === 'date' ? maxDate : undefined}
                 locale="zh-CN"
                 style={styles.iosPicker}
                 textColor="#000000"
