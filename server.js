@@ -3,6 +3,9 @@ require('dotenv').config();
 const http = require('http');
 const url = require('url');
 
+// 导入专业星盘计算器
+const ProfessionalAstroCalculator = require('./professional-astro-calculator');
+
 const server = http.createServer(async (req, res) => {
   // 设置CORS头
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -454,27 +457,41 @@ ${planetHouses ? '- 结合宫位影响进行分析' : ''}
   const geoResult = await geocodeLocation(location);
   console.log(`✅ 地理编码成功: ${geoResult.name}`);
 
-  const birthDate = new Date(`${date}T${time}:00`);
-  const [hour] = time.split(':').map(Number);
-
-  // 计算所有星体星座
+  console.log(`🔬 正在使用专业 Swiss Ephemeris 计算星盘...`);
+  
+  // 使用专业计算器
+  const professionalCalculator = new ProfessionalAstroCalculator();
+  const professionalResult = professionalCalculator.generateProfessionalReport(
+    date, time, geoResult.lat, geoResult.lng
+  );
+  
+  // 转换为兼容的格式
   const planets = {
-    sun: calculateZodiacSign(birthDate.getMonth() + 1, birthDate.getDate()),
-    moon: calculateMoonSign(birthDate),
-    rising: calculateRisingSign(birthDate, hour, geoResult.lat),
-    mercury: calculateMercurySign(birthDate),
-    venus: calculateVenusSign(birthDate),
-    mars: calculateMarsSign(birthDate)
+    sun: professionalResult.sunSign,
+    moon: professionalResult.moonSign,
+    rising: professionalResult.risingSign,
+    mercury: professionalResult.mercurySign,
+    venus: professionalResult.venusSign,
+    mars: professionalResult.marsSign
   };
 
-  // 计算宫位系统
-  const houses = calculateHouses(birthDate, hour, geoResult.lat);
-  const planetHouses = calculatePlanetHouses(birthDate, hour, geoResult.lat);
+  const planetHouses = professionalResult.planetHouses;
+  
+  // 构建宫位系统（为了兼容现有代码）
+  const houses = {};
+  for (let i = 1; i <= 12; i++) {
+    houses[i] = {
+      sign: '待实现', // 这里可以后续添加具体的宫位星座
+      degree: 0,
+      ...HOUSE_MEANINGS[i]
+    };
+  }
 
   console.log(`⭐ 星体星座: 太阳=${planets.sun}, 月亮=${planets.moon}, 上升=${planets.rising}`);
   console.log(`🌟 扩展星体: 水星=${planets.mercury}, 金星=${planets.venus}, 火星=${planets.mars}`);
   console.log(`🏠 星体宫位: 太阳=${planetHouses.sun}宫, 月亮=${planetHouses.moon}宫, 上升=${planetHouses.rising}宫`);
   console.log(`🏰 扩展宫位: 水星=${planetHouses.mercury}宫, 金星=${planetHouses.venus}宫, 火星=${planetHouses.mars}宫`);
+  console.log(`🎯 计算精度: ${professionalResult.precision}`);
 
   console.log('🤖 正在生成AI分析报告...');
   const prompt = createAnalysisPrompt(planets, planetHouses, houses);

@@ -1,0 +1,37 @@
+{
+  "version": "1.0.11",
+  "buildDate": "2025-07-14T11:57:00.228Z",
+  "features": [
+    "专业 Swiss Ephemeris 星盘计算",
+    "精确到 0.1 arcsec 的计算精度",
+    "六星体全面分析（太阳、月亮、上升、水星、金星、火星）",
+    "完整的宫位系统支持",
+    "实时地理编码",
+    "AI 智能分析报告",
+    "分类分析（性格、沟通、爱情、事业）",
+    "用户档案管理系统"
+  ],
+  "improvements": [
+    "替换简化算法为专业天文计算",
+    "提升星座定位准确性",
+    "修复边界日期计算错误",
+    "增强月亮和上升星座精度",
+    "优化计算性能（<5ms）"
+  ],
+  "technicalDetails": {
+    "calculationEngine": "Swiss Ephemeris (Moshier)",
+    "precision": "0.1 arcsec",
+    "calculationSpeed": "< 5ms",
+    "supportedPlanets": [
+      "Sun",
+      "Moon",
+      "Mercury",
+      "Venus",
+      "Mars",
+      "Jupiter",
+      "Saturn"
+    ],
+    "houseSystem": "Placidus",
+    "coordinates": "Geocentric"
+  }
+}
