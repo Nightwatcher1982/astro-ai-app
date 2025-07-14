@@ -18,218 +18,94 @@ const CustomDateTimePicker = ({
   title = '选择日期时间'
 }) => {
   const [selectedDate, setSelectedDate] = useState(initialDate);
-  const [showPicker, setShowPicker] = useState(false);
-  const [currentMode, setCurrentMode] = useState('date');
   const [tempDate, setTempDate] = useState(initialDate); // 临时存储iOS picker的选择
-
-  // 设置合理的日期范围：1900年 到 当前年份-18年（成年）
-  const currentYear = new Date().getFullYear();
-  const minDate = new Date(1900, 0, 1); // 1900年开始
-  const maxDate = new Date(currentYear - 18, 11, 31); // 18年前（确保成年）
 
   // 当initialDate变化时，更新selectedDate和tempDate
   useEffect(() => {
     setSelectedDate(initialDate);
-    setTempDate(initialDate);
+    setTempDate(new Date(initialDate.getTime()));
   }, [initialDate]);
 
-  const formatDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}年${month}月${day}日`;
-  };
-
-  const formatTime = (date) => {
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${hours}:${minutes}`;
-  };
-
-  const formatDateTime = (date) => {
-    return `${formatDate(date)} ${formatTime(date)}`;
-  };
-
-  const getDisplayText = () => {
-    switch (mode) {
-      case 'time':
-        return formatTime(selectedDate);
-      case 'datetime':
-        return formatDateTime(selectedDate);
-      default:
-        return formatDate(selectedDate);
-    }
-  };
+  // 如果不可见，直接返回null
+  if (!visible) {
+    return null;
+  }
 
   const handleDateChange = (event, date) => {
     if (Platform.OS === 'android') {
-      setShowPicker(false);
+      if (event.type === 'dismissed') {
+        onClose();
+        return;
+      }
       if (date) {
         setSelectedDate(date);
+        onConfirm(date);
+        onClose();
       }
     } else {
-      // iOS：实时更新临时日期，确保值有效
-      if (date && event.type !== 'dismissed') {
-        setTempDate(date);
+      // iOS处理
+      if (date) {
+        setTempDate(new Date(date.getTime()));
       }
     }
   };
 
-  const handleConfirm = () => {
-    onConfirm(selectedDate);
+  const handleIOSPickerCancel = () => {
+    setTempDate(new Date(selectedDate.getTime())); // 重置为原始值
     onClose();
   };
 
-  const openPicker = (pickerMode) => {
-    setCurrentMode(pickerMode);
-    // 确保tempDate使用当前selectedDate的值
-    setTempDate(new Date(selectedDate.getTime()));
-    setShowPicker(true);
-  };
-
-  const handleIOSPickerCancel = () => {
-    // 重置tempDate为原来的selectedDate
-    setTempDate(new Date(selectedDate.getTime())); 
-    setShowPicker(false);
-  };
-
   const handleIOSPickerConfirm = () => {
-    // 保存tempDate到selectedDate
-    setSelectedDate(new Date(tempDate.getTime())); 
-    setShowPicker(false);
+    setSelectedDate(new Date(tempDate.getTime())); // 保存临时选择
+    onConfirm(new Date(tempDate.getTime()));
+    onClose();
   };
 
-  const renderIOSPicker = () => {
-    if (!showPicker) return null;
-
-    return (
-      <Modal
-        visible={showPicker}
-        transparent
-        animationType="slide"
-        onRequestClose={handleIOSPickerCancel}
-      >
-        <View style={styles.iosModalOverlay}>
-          <View style={styles.iosPickerContainer}>
-            <View style={styles.iosPickerHeader}>
-              <TouchableOpacity 
-                onPress={handleIOSPickerCancel}
-                style={styles.iosHeaderButton}
-              >
-                <Text style={styles.iosHeaderButtonText}>取消</Text>
-              </TouchableOpacity>
-              <Text style={styles.iosPickerTitle}>
-                {currentMode === 'date' ? '选择日期' : '选择时间'}
-              </Text>
-              <TouchableOpacity 
-                onPress={handleIOSPickerConfirm}
-                style={styles.iosHeaderButton}
-              >
-                <Text style={[styles.iosHeaderButtonText, styles.iosConfirmText]}>完成</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.iosPickerWrapper}>
-              <DateTimePicker
-                value={tempDate}
-                mode={currentMode}
-                display="spinner"
-                onChange={handleDateChange}
-                minimumDate={currentMode === 'date' ? minDate : undefined}
-                maximumDate={currentMode === 'date' ? maxDate : undefined}
-                locale="zh-CN"
-                style={styles.iosPicker}
-                textColor="#000000"
-              />
-            </View>
-          </View>
-        </View>
-      </Modal>
-    );
-  };
-
-  const renderAndroidPicker = () => {
-    if (!showPicker) return null;
-
-    return (
-      <DateTimePicker
-        value={selectedDate}
-        mode={currentMode}
-        display="default"
-        onChange={handleDateChange}
-        minimumDate={minDate}
-        maximumDate={maxDate}
-        locale="zh-CN"
-      />
-    );
-  };
-
-  return (
+  const renderIOSPicker = () => (
     <Modal
-      visible={visible}
-      transparent
+      visible={true}
+      transparent={true}
       animationType="slide"
-      onRequestClose={onClose}
+      onRequestClose={handleIOSPickerCancel}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.header}>
-            <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
-              <Text style={styles.cancelText}>取消</Text>
+        <View style={styles.pickerContainer}>
+          <View style={styles.pickerHeader}>
+            <TouchableOpacity onPress={handleIOSPickerCancel}>
+              <Text style={styles.cancelButton}>取消</Text>
             </TouchableOpacity>
-            <Text style={styles.title}>{title}</Text>
-            <TouchableOpacity onPress={handleConfirm} style={styles.confirmButton}>
-              <Text style={styles.confirmText}>确定</Text>
+            <Text style={styles.pickerTitle}>{title}</Text>
+            <TouchableOpacity onPress={handleIOSPickerConfirm}>
+              <Text style={styles.confirmButton}>完成</Text>
             </TouchableOpacity>
           </View>
-
-          <View style={styles.content}>
-            <Text style={styles.currentValue}>{getDisplayText()}</Text>
-            
-            {mode === 'date' && (
-              <TouchableOpacity 
-                style={styles.pickerButton}
-                onPress={() => openPicker('date')}
-              >
-                <Text style={styles.pickerButtonText}>选择日期</Text>
-              </TouchableOpacity>
-            )}
-
-            {mode === 'time' && (
-              <TouchableOpacity 
-                style={styles.pickerButton}
-                onPress={() => openPicker('time')}
-              >
-                <Text style={styles.pickerButtonText}>选择时间</Text>
-              </TouchableOpacity>
-            )}
-
-            {mode === 'datetime' && (
-              <View style={styles.dateTimeButtons}>
-                <TouchableOpacity 
-                  style={[styles.pickerButton, styles.halfButton]}
-                  onPress={() => openPicker('date')}
-                >
-                  <Text style={styles.pickerButtonText}>选择日期</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.pickerButton, styles.halfButton]}
-                  onPress={() => openPicker('time')}
-                >
-                  <Text style={styles.pickerButtonText}>选择时间</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            <Text style={styles.hint}>
-              日期范围：{currentYear - 100}年 - {currentYear - 20}年
-            </Text>
+          
+          <View style={styles.iosPickerWrapper}>
+            <DateTimePicker
+              value={tempDate}
+              mode={mode}
+              display="spinner"
+              onChange={handleDateChange}
+              style={styles.iosPicker}
+              locale="zh-CN"
+            />
           </View>
         </View>
       </View>
-
-      {Platform.OS === 'ios' ? renderIOSPicker() : renderAndroidPicker()}
     </Modal>
   );
+
+  const renderAndroidPicker = () => (
+    <DateTimePicker
+      value={selectedDate}
+      mode={mode}
+      display="default"
+      onChange={handleDateChange}
+      locale="zh-CN"
+    />
+  );
+
+  return Platform.OS === 'ios' ? renderIOSPicker() : renderAndroidPicker();
 };
 
 const styles = StyleSheet.create({
@@ -238,127 +114,43 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
-  modalContent: {
-    backgroundColor: '#fff',
+  pickerContainer: {
+    backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingBottom: 34,
+    paddingBottom: 20,
   },
-  header: {
+  pickerHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e8ed',
+    borderBottomColor: '#e0e0e0',
   },
-  title: {
+  pickerTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#1a1a1a',
+    fontWeight: 'bold',
+    color: '#333',
   },
   cancelButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  cancelText: {
     fontSize: 16,
-    color: '#8a8a8a',
+    color: '#999',
   },
   confirmButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  confirmText: {
     fontSize: 16,
-    color: '#3498db',
-    fontWeight: '600',
-  },
-  content: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  currentValue: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 30,
-    textAlign: 'center',
-  },
-  pickerButton: {
-    backgroundColor: '#3498db',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginVertical: 8,
-    minWidth: 120,
-  },
-  halfButton: {
-    flex: 1,
-    marginHorizontal: 5,
-  },
-  pickerButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  dateTimeButtons: {
-    flexDirection: 'row',
-    width: '100%',
-  },
-  hint: {
-    fontSize: 14,
-    color: '#8a8a8a',
-    marginTop: 20,
-    textAlign: 'center',
-  },
-  // iOS特定样式
-  iosModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  iosPickerContainer: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  iosPickerHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e1e8ed',
-  },
-  iosPickerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1a1a1a',
-  },
-  iosHeaderButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  iosHeaderButtonText: {
-    fontSize: 16,
-    color: '#3498db',
-  },
-  iosConfirmText: {
-    fontWeight: '600',
+    color: '#007AFF',
+    fontWeight: 'bold',
   },
   iosPickerWrapper: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
   iosPicker: {
-    height: 216,
     width: '100%',
+    height: 200,
   },
 });
 
