@@ -26,8 +26,9 @@
     "@types/react": "~19.0.10",
     "astrology-js": "^0.6.0",
     "axios": "^1.10.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.0",
-    "eas-cli": "^16.15.0",
+    "express": "^4.21.2",
     "expo": "~53.0.17",
     "expo-status-bar": "~2.2.3",
     "node-fetch": "^2.7.0",
@@ -37,16 +38,13 @@
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "^4.11.1",
-    "sharp": "^0.34.3",
     "sweph": "^2.10.3-b-1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@types/node": "^24.0.13",
-    "@vercel/node": "^5.3.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3",
-    "vercel": "^44.4.1"
+    "typescript": "^5.8.3"
   },
   "private": true
 }
