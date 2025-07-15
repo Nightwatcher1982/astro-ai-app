@@ -1,5 +1,5 @@
 [build]
-command = "npm install"
+builder = "nixpacks"
 
 [deploy]
 start = "node server.js"
