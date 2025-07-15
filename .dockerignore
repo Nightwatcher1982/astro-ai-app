@@ -1,0 +1,51 @@
+# 移动应用相关文件
+.expo/
+android/
+ios/
+.expo-shared/
+
+# 开发和构建缓存
+node_modules/
+.cache/
+.vscode/
+.idea/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 环境和配置文件
+.env.local
+.env.development
+.env.test
+
+# 测试文件
+test-*.js
+*.test.js
+__tests__/
+
+# 文档
+*.md
+pic/
+documents/
+
+# Git相关
+.git/
+.gitignore
+
+# 备份文件
+*.backup
+package.json.backup
+
+# 临时文件
+*.tmp
+*.temp
+._*
+
+# EAS相关
+eas.json
+app.json
+
+# Vercel相关
+vercel.json
+.vercel/ 

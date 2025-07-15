@@ -1,11 +1,14 @@
 [phases.setup]
 nixpkgs = ["nodejs_18", "python3", "gcc", "gnumake"]
 
+[phases.install]
+cmds = [
+  "cp package.railway.json package.json",
+  "npm ci --only=production"
+]
+
 [variables]
 NODE_ENV = "production"
-
-[build]
-installCommand = "npm ci"
 
 [start]
 cmd = "node server.js" 

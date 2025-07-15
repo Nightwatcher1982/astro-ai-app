@@ -1,0 +1,22 @@
+{
+  "name": "astro-ai-server",
+  "version": "1.0.11",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test-api.js"
+  },
+  "dependencies": {
+    "astrology-js": "^0.6.0",
+    "axios": "^1.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^4.21.2",
+    "node-fetch": "^2.7.0",
+    "sweph": "^2.10.3-b-1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "private": true
+} 
