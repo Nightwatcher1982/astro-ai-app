@@ -3,9 +3,10 @@ nixpkgs = ["nodejs_18", "python3", "gcc", "gnumake"]
 
 [variables]
 NODE_ENV = "production"
+PYTHON = "python3"
 
 [build]
-installCommand = "npm ci --only=production"
+installCommand = "npm config set python python3 && npm ci --only=production"
 
 [start]
 cmd = "node server.js" 
